@@ -433,6 +433,15 @@ https://unofficial-kubernetes.readthedocs.io/en/latest/user-guide/kubectl-conven
 
 # kubectl -n auditoria-recepciontgc get pods -l name=auditoriams-tributaria-consulta-backend 
 
+kubectl delete -f .
+kubectl apply -f .
+kubectl -n auditoria-recepciontgc get pods
+watch "kubectl -n auditoria-recepciontgc get pods"
+kubectl -n kube-system get pods
+kubectl -n default get ingress | grep libros
+kubectl describe <nombre del ingress>
+kubectl get pods -n kube-system
+
  
 
  
