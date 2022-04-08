@@ -1,0 +1,447 @@
+IP	PUERTO(S)					Descripción del Servicio
+192.168.56.244 s00dlxak8s023	8080, 22	K8S WORKER
+192.168.56.246 s00dlxak8s024	8080, 22	K8S WORKER
+192.168.56.247 s00dlxak8s025	8080, 22	K8S WORKER
+172.26.0.123   s00dlxak8s123	8080, 22	K8S WORKER NUEVO NODO WORKER K8S para NFS almacén de grandes archivos
+192.168.56.238 s00dlxck8s008	8080, 22	K8S MASTER
+
+Nodo Worker Cluster Negocio Tributario 172.26.0.40
+
+DGIT Fabián Chuquitaype tiene que crear un nuevo worker clonado apartir del 
+nodo worker Cluster Negocio Tributario: Desarrollo: 172.26.0.40.
+
+1. Clonación Nodo Worker Cluster Negocio Tributario:
+Desarrollo: 172.26.0.40.
+2. Creación de namespace: auditoria-recepciontgc
+3. Configuración nuevo worker: colocar el label:
+servicios=auditoria.recepciontgc
+
+Por otro lado, como se acordó hoy, se solicitó aumentar el tamaño en disco del worker de desarrollo en 150GB para que se utilice como carpeta temporal para la recepción de los archivos.
+
+192.168.56.238	8080, 22	K8S MASTER
+--------------------------------------
+- listar todos los nodos del master
+[root@S00DLXCK8S008 ~]# kubectl get nodes
+# kubectl get nodes --show-labels -o wide
+1.listar nodos los namespaces
+[root@s00dlxak8s025 ~]# kubectl get ns
+	auditoria-recepciontgc          Active   14d
+2.obtener los pods
+[root@s00dlxak8s025 ~]# kubectl get pods
+
+3.el deploymentName debe tener un nombre corto.
+4.el projectName es el nombre de la imagen docker.
+5.ver los labels de los nodos
+[root@s00dlxak8s025 ~]# kubectl get nodes --show-labels
+
+s00dlxak8s123   Ready      worker   14d   v1.18.6   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/os=linux,kubernetes.io/arch=amd64,kubernetes.io/hostname=s00dlxak8s123,kubernetes.io/os=linux,namespace=recaudacionms-tributaria,node-role.kubernetes.io/worker=worker,servicios=auditoria.recepciontgc
+
+6.obtener la descripción de cada node
+[root@s00dlxak8s025 ~]# kubectl describe node s00dlxak8s123
+7.obtener la descripción de los secrets
+[root@s00dlxak8s025 ~]# kubectl get secrets
+[root@s00dlxak8s025 ~]# kubectl get secrets/sunatsecrets -o yaml
+
+Comandos generar secrets en k8s master tributos
+-----------------------------------------------
+[root@s00dlxak8s025 ~]# cd /root/tmp/secretsgvi
+[root@s00dlxak8s025 secretsgvi]# ls -lart
+[root@s00dlxak8s025 secretsgvi]# kubectl kustomize . > auditoria-recepciontgc-secrets.yaml
+[root@s00dlxak8s025 secretsgvi]# sed -i "s/auditoria-recepciontgc-secrets.*/auditoria-recepciontgc-secrets/g" 
+
+Instalar el configmap y los secrets
+-----------------------------------
+Archivos
+--------
+auditoriams-recepciontgc-configmap.yaml
+auditoriams-recepciontgc-secrets.yaml
+1.En el k8s master 192.168.56.238 ingresar a /root/microservices es un acceso directo a /opt/microservices
+2.Con el winscp subir el directorio D:\Mizraim\proyectos\grandesvolumenesinformacion\configuracionesinstallmicroservicios\utilidades-master-e190a68891972e78a9f3563f243c7469393eaca2\generak8s\auditoriams-tributaria-ordenfisca-backend hacia la ruta /opt/microservices
+3.En el directorio auditoriams-tributaria-ordenfisca-backend solamente deben estar los archivos:
+auditoriams-tributaria-ordenfisca-backend-configmap.yaml
+auditoriams-tributaria-ordenfisca-backend-dep.yaml
+auditoriams-tributaria-ordenfisca-backend-hpa.yaml
+auditoriams-tributaria-ordenfisca-backend-ingress.yaml
+auditoriams-tributaria-ordenfisca-backend-srv-np.yaml
+4.Del directorio /opt/microservices/00-auditoriams-recepciontgc actualizar los archivos en caso de que existan nuevos secrets o nuevas variables:
+auditoriams-recepciontgc-configmap.yaml
+auditoriams-recepciontgc-secrets.yaml
+5.ingresar al directorio 00-auditoriams-recepciontgc
+cd /opt/microservices/00-auditoriams-recepciontgc
+kubectl apply -f auditoriams-recepciontgc-secrets.yaml auditoriams-recepciontgc-configmap.yaml
+6.Para ejecutarlo desde cualquier ruta
+--------------------------------------
+	kubectl apply -f /root/microservices/00-auditoriams-recepciontgc/auditoriams-recepciontgc-secrets.yaml
+	kubectl apply -f /root/microservices/00-auditoriams-recepciontgc/auditoriams-recepciontgc-configmap.yaml
+	kubectl delete -f auditoriams-tributaria-contactcenter-batch
+	kubectl apply -f auditoriams-tributaria-contactcenter-batch
+kubectl delete -f auditoriams-tributaria-grabadorarchivo-batch;kubectl apply -f auditoriams-tributaria-grabadorarchivo-batch;
+kubectl -n auditoria-recepciontgc get pods
+kubectl -n auditoria-recepciontgc logs -f auditoriams-tributaria-consulta-backend-5f45b9db84-vth9v
+kubectl -n auditoria-recepciontgc logs -f auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-gw74z | grep select
+	kubectl delete -f . ; kubectl apply -f .
+
+kube delete pods auditoriams-tributaria-consulta-backend-5596744bd4-v82pf
+kubectl delete node <nodename>
+
+kubectl -n juridicams-sigeri get pods
+kubectl -n juridicams-sigeri get deploy
+kubectl -n juridicams-sigeri get deploy juridicams-asignacion-backend -o yaml
+
+watch "kubectl -n auditoria-recepciontgc get pods"
+
+7.verificar los secrets creados
+-------------------------------
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get secrets
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get secrets
+7.verificar los configmap
+-------------------------
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get configmap
+	Eliminar y crear el configmap auditoriams-recepciontgc-configmap
+	--------------------------------------------------------
+	kubectl delete -f auditoriams-recepciontgc-configmap.yaml ; kubectl apply -f auditoriams-recepciontgc-configmap.yaml ;
+	ver la descripción de un configmap y un deployment
+	--------------------------------------------------
+	[root@s00dlxak8s025 00-auditoriams-recepciontgc]# kubectl -n auditoria-recepciontgc describe configmaps auditoriams-recepciontgc-configmap
+kubectl -n auditoria-recepciontgc describe configmaps auditoriams-recepciontgc-configmap
+	[root@s00dlxak8s025 microservices]# kubectl -n auditoria-recepciontgc get deploy auditoriams-tributaria-grabadorarchivo-batch -o yaml
+	kubectl -n auditoria-recepciontgc get deploy auditoriams-tributaria-grabadorarchivo-batch -o yaml
+9.describe hpa
+--------------
+[root@S00DLXCK8S008 microservices]# kube describe hpa auditoriams-tributaria-consulta-backend
+[root@S00DLXCK8S008 microservices]# kube get hpa
+8.obtener todos los pod, service, deployment y replicaset
+---------------------------------------------------------
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get all
+9.listar los pods
+-----------------
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get pods
+9.luego ejecutar desde el bamboo para ello debe existir el directorio /opt/microservices/auditoriams-tributaria-ordenfisca-backend
+10.en caso de que salgan errores en el bamboo se tiene que hacer un apply al directorio de los yamls del microservicio
+----------------------------------------------------------------------------------------------------------------------
+	kubectl apply -f auditoriams-tributaria-receptor-backend
+11.para eliminar el apply de la configuracion de un directorio
+--------------------------------------------------------------
+	kubectl delete -f auditoriams-tributaria-ordenfisca-backend
+12.obtener todos los puertos de los ms
+kubectl get svc --all-namespaces
+13.luego de ejecutada la tarea de bamboo verificar la imagen del microservicio, verificar los logs del pod
+----------------------------------------------------------------------------------------------------------
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get pods
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc logs -f auditoriams-tributaria-consulta-batch-79c57c976b-5slh4
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc describe pod auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-t66hq
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc describe pod auditoriams-tributaria-visorcontancia-backend-666fd7cc54-7qpm8
+14.listar ingress sin namespaces
+--------------------------------
+	[root@s00dlxak8s025 ~]# kubectl get ingress
+15.listar los ingress
+---------------------
+	[root@s00dlxak8s025 microservices]# kubectl get pods -n nginx-ingress
+	[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc get ingress
+16.listar los ingress por namespaces
+------------------------------------
+[root@s00dlxak8s025 microservices]# kubectl -n auditoria-recepciontgc get ingress
+16.ver el log de request que llegan al microservicio
+----------------------------------------------------
+	[root@s00dlxak8s025 ~]# kubectl logs -f nginx-ingress-controller-7774cfc7c9-5mmd9 -n nginx-ingress
+	[root@s00dlxak8s025 ~]# kubectl logs -f nginx-ingress-controller-7774cfc7c9-44mmx -n nginx-ingress
+	[root@s00dlxak8s025 ~]# kubectl logs -f nginx-ingress-controller-7774cfc7c9-44mmx -n nginx-ingress | grep ticket
+	[root@s00dlxak8s025 ~]# kubectl logs -f nginx-ingress-controller-7774cfc7c9-5mmd9 -n nginx-ingress | grep ticket
+
+	[root@s00dlxak8s025 ~]# kubectl logs -f nginx-ingress-controller-7774cfc7c9-5mmd9 -n nginx-ingress
+
+	
+
+17.eliminar y crear secrets
+---------------------------
+kubectl -n auditoria-recepciontgc delete secret/auditoriams-recepciontgc-secrets
+kubectl delete -f auditoriams-recepciontgc-secrets.yaml ; kubectl apply -f auditoriams-recepciontgc-secrets.yaml ;
+18.ver la descripción de un secret
+----------------------------------
+[root@s00dlxak8s025 secretsgvi]# kubectl -n auditoria-recepciontgc describe secrets/auditoriams-recepciontgc-secrets
+19.ver la descripción de un ingress
+-----------------------------------
+[root@s00dlxak8s025 secretsgvi]# kubectl -n auditoria-recepciontgc describe ingress auditoriams-tributaria-receptor-backend
+[root@s00dlxak8s025 secretsgvi]# kubectl -n auditoria-recepciontgc describe ingress auditoriams-tributaria-visorcontancia-backend
+
+20. Eliminación de todos los ms
+-------------------------------
+kubectl delete -f /opt/microservices/auditoriams-tributaria-receptorlog-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-receptor-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-contactcenter-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-consulta-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-consulta-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-parametria-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-gestorsesion-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-grabadorarchivo-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-notificador-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-ordenfisca-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-visorcontancia-backend/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-siev-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-limpiador-batch/
+kubectl delete -f /opt/microservices/auditoriams-tributaria-fileserver-backend/
+
+kubectl apply -f /opt/microservices/auditoriams-tributaria-receptorlog-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-receptor-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-contactcenter-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-consulta-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-consulta-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-parametria-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-gestorsesion-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-grabadorarchivo-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-notificador-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-ordenfisca-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-visorcontancia-backend/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-siev-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-limpiador-batch/
+kubectl apply -f /opt/microservices/auditoriams-tributaria-fileserver-backend/
+
+
+[root@s00dlxak8s025 microservices]# kubectl get all
+
+[root@s00dlxak8s025 microservices]# kubectl -n auditoria-recepciontgc logs -f auditoriams-tributaria-parametria-backend-6d8f47549-g46rw -- bash -c "echo hi > /opt/microservices/testnew.txt"
+
+kubectl exec -it sss-pod-four  -- bash -c "echo hi > /opt/microservices/testnew.txt"
+
+[root@s00dlxak8s025 microservices]# kubectl get nodes
+s00dlxwk8s009   Ready      lb       79d   v1.18.6
+[root@s00dlxak8s025 microservices]# ping s00dlxwk8s009
+PING S00DLXWK8S009 (192.168.56.239) 56(84) bytes of data.
+[root@s00dlxak8s025 microservices]# ssh root@192.168.56.239
+[root@S00DLXWK8S009 ~]# netstat -tlpn
+[root@S00DLXWK8S009 ~]# netstat -tlpn|grep 32760
+
+
+kubectl -n auditoria-recepciontgc get svc auditoriams-tributaria-parametria-backend
+kubectl -n auditoria-recepciontgc describe svc auditoriams-tributaria-parametria-backend
+
+kubectl -n auditoria-recepciontgc get svc
+
+
+/var/log/nginx/api-intranet.sunat.peru.443.access.log
+kubectl get nodes --show-labels
+
+comandos kubernetes
+-------------------
+https://stackoverflow.com/questions/43941772/get-yaml-for-deployed-kubernetes-services
+
+
+kubectl -n auditoria-recepciontgc exec -it auditoriams-tributaria-receptor-backend-db595ccb-v5xbd sh
+Ingresar a los pods
+-------------------
+kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl kubectl exec [POD] -- [COMMAND] instead.
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc exec -it auditoriams-tributaria-receptor-backend-db595ccb-v5xbd sh
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc exec -it auditoriams-tributaria-notificador-batch-69ddcf67ff-tg8xh sh
+[root@s00dlxak8s025 ~]# kubectl -n auditoria-recepciontgc exec -it auditoriams-tributaria-fileserver-backend-67c4984ddb-6r9mf sh
+
+crear alias
+-----------
+alias kube="kubectl -n auditoria-recepciontgc"
+[root@S00DLXCK8S008 microservices]# uname -a
+
+curl --location --request POST '10.111.165.59:7253/v1/auditoria/tributaria/operativo/e/receptorgvi/archivos' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"proTributario" : "01",
+"numCarta": "190233047242-04",
+"numReq": "232200000042",
+"numOrdFis": "190233047245",
+"numRUC": "20551093035",
+"codDependencia": "0011",
+"codUsuario": "20551093035MODDATOS",
+"archivosAdjuntos": [
+{ "nombreArchivo":"libro2021.xlsx",
+"tamArchivo":13,
+"desSha256":"bd4526534df7b33772c2f1ee26d97c39ff11379c8848e4e19d74ad849ef66429"}
+]
+}'
+
+curl --location --request POST 'auditoriams-tributaria-receptor-backend:7253/v1/auditoria/tributaria/operativo/e/receptorgvi/archivos' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"proTributario" : "01",
+"numCarta": "190233047242-04",
+"numReq": "232200000042",
+"numOrdFis": "190233047245",
+"numRUC": "20551093035",
+"codDependencia": "0011",
+"codUsuario": "20551093035MODDATOS",
+"archivosAdjuntos": [
+{ "nombreArchivo":"libro2021.xlsx",
+"tamArchivo":13,
+"desSha256":"bd4526534df7b33772c2f1ee26d97c39ff11379c8848e4e19d74ad849ef66429"}
+]
+}'
+
+
+curl --location --request POST 'http://auditoriams-tributaria-receptor-backend:7253/v1/auditoria/tributaria/operativo/e/receptorgvi/archivos' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+"proTributario" : "01",
+"numCarta": "190233047242-04",
+"numReq": "232200000042",
+"numOrdFis": "190233047245",
+"numRUC": "20551093035",
+"codDependencia": "0011",
+"codUsuario": "20551093035MODDATOS",
+"archivosAdjuntos": [
+{ "nombreArchivo":"libro2021.xlsx",
+"tamArchivo":13,
+"desSha256":"bd4526534df7b33772c2f1ee26d97c39ff11379c8848e4e19d74ad849ef66429"}
+]
+}'
+
+
+
+
+
+https://kubernetes.io/docs/concepts/workloads/controllers/deployment/ 
+
+kubectl generate pods 
+
+kubectl generate pod generator 
+
+https://unofficial-kubernetes.readthedocs.io/en/latest/user-guide/kubectl-conventions/ 
+
+# crear un pod 
+
+# kubectl run --generator=run-pod/v1 podtest --image=nginx:alpine 
+
+#describe un pod es como un log del pod mirar la seccion Events 
+
+# kubectl describe pod podtest 
+
+# kubectl -n auditoria-recepciontgc describe pod auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-gw74z 
+
+# ver los recursos del api de kubernetes ver shortname comando corto 
+
+# kubectl api-resources 
+
+# eliminar un pod 
+
+# kubectl delete pod podtest 
+
+# listar los namespaces 
+
+# kubectl get ns 
+
+# listar los pods de una namespaces 
+
+# kubectl -n auditoria-recepciontgc get pods 
+
+# obtener el yamel de un pod 
+
+# kubectl -n auditoria-recepciontgc get pod auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-gw74z -o yaml 
+
+# listar los contenedores en cada nodo worker 
+
+# docker ps 
+
+# listar el contenedor por el nombre que kubernetes le asigno 
+
+# docker ps -f=name=k8s_auditoriams-tributaria-ordenfisca-backend_auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-gw74z_auditoria-recepciontgc_67d9529f-736d-4a01-845a-6bccaf185e8f_0 
+
+# listar el ultimo contenedor creado 
+
+# docker ps –l 
+
+# ingresar a los contenedores dentro de un pod 
+
+# kubectl -n auditoria-recepciontgc exec -ti auditoriams-tributaria-grabadorarchivo-batch-68c67c7665-x8bd4 – sh 
+
+# ls 
+
+# pwd 
+
+ 
+
+# ls –lart 
+
+# whoami 
+
+# ver los logs de un pod 
+
+# kubectl -n auditoria-recepciontgc logs auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-gw74z –f 
+
+# versiones del api de kubernetes 
+
+# kubectl api-versions 
+
+# filtrar todos los recursos del api que tienen la palabra Pod 
+
+# kubectl api-resources | grep Pod 
+
+# ejecutar los yamels del directorio auditoriams-tributaria-ordenfisca-backend 
+
+# kubectl apply -f /opt/microservices/auditoriams-tributaria-ordenfisca-backend/ 
+
+# eliminar los pods, deployments del directorio auditoriams-tributaria-ordenfisca-backend 
+
+# kubectl delete -f /opt/microservices/auditoriams-tributaria-ordenfisca-backend/ 
+
+# los yamels son manifiestos en kubernetes 
+
+# listar los deployments de un namespaces 
+
+# kubectl -n auditoria-recepciontgc get deploy 
+
+# listar el yamel de un deployment 
+
+# kubectl -n auditoria-recepciontgc get deploy auditoriams-tributaria-ordenfisca-backend -o yaml 
+
+# listar los labels de los deployments 
+
+# kubectl -n auditoria-recepciontgc get deploy --show-labels 
+
+# ver el estado de un deployment al crearse o modificarse 
+
+# kubectl -n auditoria-recepciontgc rollout status deployment auditoriams-tributaria-ordenfisca-backend 
+
+# listar replicaset 
+
+# kubectl -n auditoria-recepciontgc get rs 
+
+# obtener el yamel de un replicaset 
+
+# kubectl -n auditoria-recepciontgc get rs auditoriams-tributaria-ordenfisca-backend-7d6c7b684f -o yaml 
+
+# ver los labels de los replicaset 
+
+# kubectl -n auditoria-recepciontgc get rs --show-labels 
+
+# ver los labels de los pods 
+
+# kubectl -n auditoria-recepciontgc get pods --show-labels 
+
+# ver el yamel de un pod 
+
+# kubectl -n auditoria-recepciontgc get pod auditoriams-tributaria-ordenfisca-backend-7d6c7b684f-n5zx7 -o yaml 
+
+# describir un deployment 
+
+# kubectl -n auditoria-recepciontgc describe deployment.apps auditoriams-tributaria-ordenfisca-backend 
+
+# ver histórico y revisiones de un deployment 
+
+# kubectl -n auditoria-recepciontgc rollout history deployment auditoriams-tributaria-ordenfisca-backend 
+
+# kubectl -n auditoria-recepciontgc rollout history deployment auditoriams-tributaria-consulta-batch 
+
+# kubectl -n auditoria-recepciontgc rollout history deployment auditoriams-tributaria-consulta-batch --revision=2 
+
+# listar un objeto por el label 
+
+# kubectl -n auditoria-recepciontgc get pods -l name=auditoriams-tributaria-consulta-backend 
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
